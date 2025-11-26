@@ -8,6 +8,7 @@ using Sandbox.Utility;
 using Sandbox.VR;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Sandbox;
 
@@ -22,12 +23,18 @@ internal partial class GameInstanceDll : Engine.IGameInstanceDll
 
 	private bool _isAssemblyLoadingPaused;
 
+	[DllImport( "kernel32.dll" )]
+	public static extern IntPtr LoadLibrary( string dllToLoad );
+
 	public void Bootstrap()
 	{
 		Current = this;
 
 		GlobalContext.Current.Reset();
 		GlobalContext.Current.LocalAssembly = GetType().Assembly;
+
+		LoadLibrary( Path.GetFullPath( "bin/managed/fmod.dll" ) );
+		LoadLibrary( Path.GetFullPath( "bin/managed/fmodstudio.dll" ) );
 
 		Game.InitHost();
 

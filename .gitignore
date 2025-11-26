@@ -4,6 +4,8 @@
 
 # Don't ignore our new assets
 !game/core/tools/images/new_splash.png
+!bin/managed/fmodstudio.dll
+!bin/managed/fmod.dll
 
 # Git
 !.gitignore
