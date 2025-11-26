@@ -2,22 +2,24 @@
 
 partial class SceneEditorSession
 {
-	public Scene ActiveGameScene => activeGameScene;
-	public bool HasActiveGameScene => activeGameScene != null;
+	/// <summary>
+	/// The game session of this editor session, if playing.
+	/// </summary>
+	public GameEditorSession GameSession { get; private set; }
 
-	public static SceneEditorSession ActiveGameSession => All.Where( s => s.HasActiveGameScene ).FirstOrDefault();
-
-	Scene activeGameScene;
+	public virtual bool IsPlaying => GameSession != null;
 
 	public void SetPlaying( Scene scene )
 	{
-		activeGameScene = scene;
-		activeGameScene.Editor = this;
+		GameSession = new GameEditorSession( this, scene );
+		GameSession.MakeActive();
 	}
 
-	public void StopPlaying()
+	public virtual void StopPlaying()
 	{
-		activeGameScene?.Destroy();
-		activeGameScene = null;
+		GameSession?.Destroy();
+		GameSession = null;
+
+		MakeActive();
 	}
 }

@@ -312,7 +312,7 @@ class ControlSheetRow : Widget
 			return;
 
 		// Only show "Apply To Scene" if we're editing in an active game session
-		if ( !session.HasActiveGameScene || component.GameObject.Scene != session.ActiveGameScene )
+		if ( !session.IsPlaying || component.GameObject.Scene != session.Scene )
 			return;
 
 		// try to find the version of this component in the editor session

@@ -36,12 +36,13 @@ internal static class TerrainClipmap
 
 			int pad = 1;
 			int radius = step * (g + pad);
+			int innerRadius = (g * prevStep) - prevStep; // Overlap by one step
 
 			for ( int y = -radius; y < radius; y += step )
 			{
 				for ( int x = -radius; x < radius; x += step )
 				{
-					if ( Math.Max( Math.Abs( x + prevStep ), Math.Abs( y + prevStep ) ) < (g * prevStep) )
+					if ( Math.Max( Math.Abs( x + prevStep ), Math.Abs( y + prevStep ) ) < innerRadius )
 						continue;
 
 					vertices.Add( new PosAndLodVertex( new Vector3( x, y, level ) ) );
@@ -66,18 +67,27 @@ internal static class TerrainClipmap
 	}
 
 	/// <summary>
-	/// Inefficient implementation of diamond square, it's not merging verticies.
+	/// Diamond-square implementation trying to reduce duplicate vertices.
 	/// </summary>
-	/// <returns></returns>
 	public static Mesh GenerateMesh_DiamondSquare( int LodLevels, int LodExtentTexels, Material material, int subdivisionFactor = 1, int subdivisionLodCount = 3 )
 	{
 		var total = LodLevels * 36 * (LodExtentTexels / 2 + 1) * (LodExtentTexels / 2 + 1) * subdivisionFactor * subdivisionFactor;
 
-		var vertices = ArrayPool<PosAndLodVertex>.Shared.Rent( total );
-		var indices = ArrayPool<int>.Shared.Rent( total * 3 );
+		var vertexMap = new Dictionary<(float x, float y, int lod), int>( total );
+		var vertices = new List<PosAndLodVertex>( total );
+		var indices = new List<int>( total * 3 );
 
-		int vertex = 0;
-		int idx = 0;
+		int GetOrAddVertex( float x, float y, int level )
+		{
+			var key = (x, y, level);
+			if ( !vertexMap.TryGetValue( key, out int index ) )
+			{
+				index = vertices.Count;
+				vertices.Add( new PosAndLodVertex( new Vector3( x, y, level ) ) );
+				vertexMap[key] = index;
+			}
+			return index;
+		}
 
 		// Loop through each LOD level
 		for ( int level = 0; level < LodLevels; level++ )
@@ -93,7 +103,7 @@ internal static class TerrainClipmap
 
 			int radius = lodBaseStep * (g + pad);
 			int prevLodBaseStep = level > 0 ? (1 << (level - 1)) : 0;
-			int innerRadius = prevLodBaseStep * g;
+			int innerRadius = (prevLodBaseStep * g) - prevLodBaseStep; // Overlap by one step
 
 			for ( float y = -radius; y < radius; y += step )
 			{
@@ -110,112 +120,100 @@ internal static class TerrainClipmap
 					//   | /   |   \ |
 					//   G-----H-----I
 
-					var vecA = new Vector3( x, y, level );
-					var vecC = new Vector3( x + step, y, level );
-					var vecG = new Vector3( x, y + step, level );
-					var vecI = new Vector3( x + step, y + step, level );
-					var vecB = (vecA + vecC) * 0.5f;
-					var vecD = (vecA + vecG) * 0.5f;
-					var vecF = (vecC + vecI) * 0.5f;
-					var vecH = (vecG + vecI) * 0.5f;
-					var vecE = (vecA + vecI) * 0.5f;
-
-					vertices[vertex++].position = vecA;
-					vertices[vertex++].position = vecB;
-					vertices[vertex++].position = vecC;
-					vertices[vertex++].position = vecD;
-					vertices[vertex++].position = vecE;
-					vertices[vertex++].position = vecF;
-					vertices[vertex++].position = vecG;
-					vertices[vertex++].position = vecH;
-					vertices[vertex++].position = vecI;
+					float halfStep = step * 0.5f;
+					int idxA = GetOrAddVertex( x, y, level );
+					int idxB = GetOrAddVertex( x + halfStep, y, level );
+					int idxC = GetOrAddVertex( x + step, y, level );
+					int idxD = GetOrAddVertex( x, y + halfStep, level );
+					int idxE = GetOrAddVertex( x + halfStep, y + halfStep, level );
+					int idxF = GetOrAddVertex( x + step, y + halfStep, level );
+					int idxG = GetOrAddVertex( x, y + step, level );
+					int idxH = GetOrAddVertex( x + halfStep, y + step, level );
+					int idxI = GetOrAddVertex( x + step, y + step, level );
 
 					// Stitch the border into the next level
 					if ( x == -radius )
 					{
 						// E G A
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 3;
-						indices[idx++] = vertex - 9;
+						indices.Add( idxE );
+						indices.Add( idxG );
+						indices.Add( idxA );
 					}
 					else
 					{
 						// E D A
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 6;
-						indices[idx++] = vertex - 9;
+						indices.Add( idxE );
+						indices.Add( idxD );
+						indices.Add( idxA );
 						// E G D
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 3;
-						indices[idx++] = vertex - 6;
+						indices.Add( idxE );
+						indices.Add( idxG );
+						indices.Add( idxD );
 					}
 
-					if ( y == radius - 1 )
+					if ( y == radius - step )
 					{
 						// E I G
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 1;
-						indices[idx++] = vertex - 3;
+						indices.Add( idxE );
+						indices.Add( idxI );
+						indices.Add( idxG );
 					}
 					else
 					{
 						// E H G
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 2;
-						indices[idx++] = vertex - 3;
+						indices.Add( idxE );
+						indices.Add( idxH );
+						indices.Add( idxG );
 						// E I H
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 1;
-						indices[idx++] = vertex - 2;
+						indices.Add( idxE );
+						indices.Add( idxI );
+						indices.Add( idxH );
 					}
 
-					if ( x == radius - 1 )
+					if ( x == radius - step )
 					{
 						// E C I
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 7;
-						indices[idx++] = vertex - 1;
+						indices.Add( idxE );
+						indices.Add( idxC );
+						indices.Add( idxI );
 					}
 					else
 					{
 						// E F I
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 4;
-						indices[idx++] = vertex - 1;
+						indices.Add( idxE );
+						indices.Add( idxF );
+						indices.Add( idxI );
 						// E C F
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 7;
-						indices[idx++] = vertex - 4;
+						indices.Add( idxE );
+						indices.Add( idxC );
+						indices.Add( idxF );
 					}
 
 					if ( y == -radius )
 					{
 						// E A C
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 9;
-						indices[idx++] = vertex - 7;
+						indices.Add( idxE );
+						indices.Add( idxA );
+						indices.Add( idxC );
 					}
 					else
 					{
 						// E B C
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 8;
-						indices[idx++] = vertex - 7;
+						indices.Add( idxE );
+						indices.Add( idxB );
+						indices.Add( idxC );
 						// E A B
-						indices[idx++] = vertex - 5;
-						indices[idx++] = vertex - 9;
-						indices[idx++] = vertex - 8;
+						indices.Add( idxE );
+						indices.Add( idxA );
+						indices.Add( idxB );
 					}
 				}
 			}
 		}
 
 		var mesh = new Mesh( material );
-		mesh.CreateVertexBuffer( vertex, PosAndLodVertex.Layout, vertices.AsSpan() );
-		mesh.CreateIndexBuffer( idx, indices.AsSpan() );
-
-		ArrayPool<PosAndLodVertex>.Shared.Return( vertices );
-		ArrayPool<int>.Shared.Return( indices );
+		mesh.CreateVertexBuffer( vertices.Count, PosAndLodVertex.Layout, vertices );
+		mesh.CreateIndexBuffer( indices.Count, indices );
 
 		return mesh;
 	}

@@ -90,7 +90,7 @@ public partial class SceneTreeWidget : Widget
 
 		Layout.Add( TreeView, 1 );
 
-		_lastSession = null;
+		_lastScene.SetTarget( null );
 		CheckForChanges();
 
 		EditorUtility.OnInspect -= OnInspect;
@@ -125,32 +125,31 @@ public partial class SceneTreeWidget : Widget
 		}
 	}
 
-	SceneEditorSession _lastSession;
+	WeakReference<Scene> _lastScene = new( null );
 	bool queryDirty = false;
-	bool hasActiveGameScene = false;
 
 	[EditorEvent.Frame]
 	public void CheckForChanges()
 	{
-		var activeScene = SceneEditorSession.Active;
-		if ( activeScene is null )
+		var session = SceneEditorSession.Active;
+		if ( session is null )
 			return;
 
-		if ( hasActiveGameScene == activeScene.HasActiveGameScene )
-		{
-			if ( !queryDirty && _lastSession == activeScene )
-				return;
-		}
+		_lastScene.TryGetTarget( out var last );
 
-		_lastSession = activeScene;
+		// if query AND scene is unchanged - no need to rebuild the tree
+		if ( !queryDirty && ReferenceEquals( last, session.Scene ) )
+			return;
+
+		_lastScene.SetTarget( session.Scene );
+
 		queryDirty = false;
-		hasActiveGameScene = _lastSession.HasActiveGameScene;
 		Rebuild();
 	}
 
 	private void Rebuild()
 	{
-		var activeScene = SceneEditorSession.Active;
+		var session = SceneEditorSession.Active;
 
 		Header.Clear( true );
 
@@ -161,14 +160,13 @@ public partial class SceneTreeWidget : Widget
 		TreeView.Selection = new SelectionSystem();
 		TreeView.Clear();
 
-		if ( _lastSession is null )
+		if ( session is null )
 			return;
 
 		bool hasSearch = !string.IsNullOrEmpty( Search.Text );
 		SearchClear.Visible = hasSearch;
 
-		var scene = _lastSession.HasActiveGameScene ? _lastSession.ActiveGameScene : _lastSession.Scene;
-
+		var scene = session.Scene;
 		if ( hasSearch )
 		{
 			// flat search view
@@ -237,7 +235,7 @@ public partial class SceneTreeWidget : Widget
 			}
 		}
 
-		TreeView.Selection = activeScene.Selection;
+		TreeView.Selection = session.Selection;
 
 		// Go through the current scene
 		// Feel like this could be loads faster

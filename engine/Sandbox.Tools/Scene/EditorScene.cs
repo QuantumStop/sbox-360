@@ -295,7 +295,7 @@ public static class EditorScene
 
 	public static void Stop()
 	{
-		SceneEditorSession.ActiveGameSession.StopPlaying();
+		SceneEditorSession.Active.StopPlaying();
 
 		Game.IsPlaying = false;
 

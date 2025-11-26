@@ -35,7 +35,11 @@ public partial class SceneViewWidget : Widget
 
 	public EditorToolManager Tools { get; private set; }
 
-	public SceneEditorSession Session { get; private set; }
+	/// <summary>
+	/// The currently active session for this scene view. The game session if playing, otherwise the editor session.
+	/// </summary>
+	public SceneEditorSession Session => _editorSession.GameSession ?? _editorSession;
+	private SceneEditorSession _editorSession;
 
 	private List<LinkableSplitter> _splitters;
 	public Dictionary<int, SceneViewportWidget> _viewports;
@@ -44,7 +48,7 @@ public partial class SceneViewWidget : Widget
 
 	public SceneViewWidget( SceneEditorSession session, Widget parent ) : base( parent )
 	{
-		Session = session;
+		_editorSession = session;
 		Tools = new EditorToolManager();
 
 		Layout = Layout.Column();
@@ -61,6 +65,13 @@ public partial class SceneViewWidget : Widget
 	{
 		SaveState();
 		base.OnDestroyed();
+	}
+
+	protected override void OnPaint()
+	{
+		Paint.ClearPen();
+		Paint.SetBrush( Theme.ControlBackground );
+		Paint.DrawRect( LocalRect, Theme.ControlRadius );
 	}
 
 	static int selectionHash = 0;

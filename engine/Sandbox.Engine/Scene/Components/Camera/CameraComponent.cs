@@ -381,10 +381,6 @@ public sealed partial class CameraComponent : Component, Component.ExecuteInEdit
 			return;
 
 		camera.OnRenderUI = () => OnCameraRenderUI( camera );
-		camera.OnRenderOverlay = () =>
-		{
-			if ( IsMainCamera ) Sandbox.DebugOverlay.Render();
-		};
 	}
 
 	[Obsolete( "Use CommandList" )]

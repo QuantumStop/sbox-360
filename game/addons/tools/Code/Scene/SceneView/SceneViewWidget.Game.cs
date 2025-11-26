@@ -17,7 +17,7 @@ public partial class SceneViewWidget
 	[Event( "scene.play" )]
 	public void OnScenePlay()
 	{
-		if ( !Session.HasActiveGameScene ) return;
+		if ( !Session.IsPlaying ) return;
 		CurrentView = ViewMode.Game;
 
 		OnViewModeChanged();
@@ -42,7 +42,7 @@ public partial class SceneViewWidget
 
 	public void ToggleEject()
 	{
-		if ( !Session.HasActiveGameScene ) return;
+		if ( !Session.IsPlaying ) return;
 
 		CurrentView = CurrentView == ViewMode.Game ? ViewMode.GameEjected : ViewMode.Game;
 
@@ -59,12 +59,17 @@ public partial class SceneViewWidget
 	}
 
 	/// <summary>
-	/// Current view mode changed, we need to hide or show some UI things.
+	/// Current view mode changed
 	/// </summary>
 	void OnViewModeChanged()
 	{
 		_viewportTools.Rebuild();
 		_sidePanel?.Visible = CurrentView != ViewMode.Game;
+
+		foreach ( var viewport in _viewports.Values )
+		{
+			viewport.GizmoInstance.Selection = Session.Selection;
+		}
 	}
 
 	public SceneViewportWidget GetGameTarget()

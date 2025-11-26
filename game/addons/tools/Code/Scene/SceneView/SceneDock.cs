@@ -6,13 +6,15 @@
 /// the dock is hovered or focused. It also destroys the session when the dock
 /// is closed.
 /// </summary>
+/// Sol: does this need to exist? can't we just dock the view widget directly?
 public partial class SceneDock : Widget
 {
-	SceneEditorSession Session { get; set; }
+	public SceneEditorSession Session => _editorSession.GameSession ?? _editorSession;
+	private SceneEditorSession _editorSession;
 
 	public SceneDock( SceneEditorSession session ) : base( null )
 	{
-		Session = session;
+		_editorSession = session;
 
 		Layout = Layout.Row();
 		Layout.Add( new SceneViewWidget( session, this ) );
@@ -23,12 +25,12 @@ public partial class SceneDock : Widget
 
 	protected override bool OnClose()
 	{
-		if ( Session.HasUnsavedChanges )
+		if ( _editorSession.HasUnsavedChanges )
 		{
 			this.ShowUnsavedChangesDialog(
-				assetName: Session.Scene.Name,
-				assetType: Session.IsPrefabSession ? "prefab" : "scene",
-				onSave: () => Session.Save( false ) );
+				assetName: _editorSession.Scene.Name,
+				assetType: _editorSession.IsPrefabSession ? "prefab" : "scene",
+				onSave: () => _editorSession.Save( false ) );
 
 			return false;
 		}
@@ -40,8 +42,8 @@ public partial class SceneDock : Widget
 	{
 		base.OnDestroyed();
 
-		Session.Destroy();
-		Session = null;
+		_editorSession.Destroy();
+		_editorSession = null;
 	}
 
 	protected override void OnVisibilityChanged( bool visible )

@@ -18,7 +18,7 @@ public partial class SceneViewportWidget : Widget
 	private float TargetFOV { get; set; } = 80;
 	private static float TransitionSpeed => 40;
 
-	SceneEditorSession Session => SceneView.Session;
+	protected virtual SceneEditorSession Session => SceneView.Session;
 	EditorToolManager Tools => SceneView.Tools;
 
 	public SceneRenderingWidget Renderer;
@@ -514,7 +514,6 @@ public partial class SceneViewportWidget : Widget
 		Tools.Frame( _activeCamera, Session );
 
 		EditorEvent.RunInterface<EditorEvent.ISceneView>( x => x.DrawGizmos( Session.Scene ) );
-
 		Session.Scene.EditorDraw();
 
 		DrawSelection();

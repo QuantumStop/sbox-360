@@ -305,7 +305,7 @@ public partial class MovieEditor : Widget, IHotloadManaged
 	void UpdateEditorContext()
 	{
 		var activeEditorSession = SceneEditorSession.Active;
-		var activeScene = activeEditorSession?.ActiveGameScene ?? activeEditorSession?.Scene;
+		var activeScene = activeEditorSession?.Scene;
 
 		// The current session exists
 		if ( Session is { } session )
@@ -367,7 +367,7 @@ public partial class MovieEditor : Widget, IHotloadManaged
 
 	public void CreateNewPlayer()
 	{
-		using ( SceneEditorSession.Active.Scene.Push() )
+		using ( SceneEditorSession.Scope() )
 		{
 			var go = new GameObject( true, "New Movie Player" );
 			go.Components.Create<MoviePlayer>();

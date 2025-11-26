@@ -5,7 +5,7 @@ public partial class SceneViewportWidget
 	public void StartPlay()
 	{
 		Editor.GameMode.SetPlayWidget( Renderer );
-		Renderer.Scene = Session.ActiveGameScene;
+		Renderer.Scene = Session.Scene;
 		Renderer.Camera = null;
 		Renderer.EnableEngineOverlays = true;
 		ViewportOptions.Visible = false;

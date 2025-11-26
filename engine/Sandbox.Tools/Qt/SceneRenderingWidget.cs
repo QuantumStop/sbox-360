@@ -82,19 +82,20 @@ public class SceneRenderingWidget : Frame
 
 		if ( SwapChain == default ) return;
 
-		if ( Camera.IsValid() )
+		var sceneCamera = GetSceneCamera();
+		if ( sceneCamera is not null )
 		{
-			Camera.SceneCamera.EnableEngineOverlays = EnableEngineOverlays;
-			Camera.Scene?.PreCameraRender();
-			Camera.AddToRenderList( SwapChain, Size * DpiScale );
-			return;
+			sceneCamera.EnableEngineOverlays = EnableEngineOverlays;
 		}
 
-		if ( Scene.IsValid() )
+		if ( Camera.IsValid() )
 		{
-			Scene.Camera.SceneCamera.EnableEngineOverlays = EnableEngineOverlays;
+			Camera.Scene?.PreCameraRender();
+			Camera.AddToRenderList( SwapChain, Size * DpiScale );
+		}
+		else if ( Scene.IsValid() )
+		{
 			Scene.Render( SwapChain, Size * DpiScale );
-			return;
 		}
 	}
 
@@ -124,9 +125,6 @@ public class SceneRenderingWidget : Frame
 	{
 		if ( !Scene.IsValid() ) return;
 		if ( !Visible ) return;
-
-		var camera = GetSceneCamera();
-		if ( camera is null ) return;
 
 		using ( Scene.Push() )
 		{

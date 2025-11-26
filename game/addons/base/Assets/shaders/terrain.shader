@@ -98,10 +98,12 @@ VS
                 if ( weight > 0.0f )
                 {
                     float2 layerUV = ( o.LocalPosition.xy / 32.0f ) * g_TerrainMaterials[matIdx].uvscale;
+                    float2 seamlessUV = Terrain_SampleSeamlessUV( layerUV );
 
                     // Sample height from Height(blue channel) of NHO texture
                     Texture2D tNHO = Bindless::GetTexture2D( g_TerrainMaterials[matIdx].nho_texid );
-                    float height = tNHO.SampleLevel( g_sAnisotropic, layerUV, 0 ).b;
+                    
+                    float height = tNHO.SampleLevel( g_sAnisotropic, seamlessUV, 0 ).b;
                     float centeredHeight = (height - 0.5f) * 2.0f;
 					
                     // Accumulate displacement
@@ -171,9 +173,13 @@ PS
         for ( int i = 0; i < 4; i++ )
         {
             float2 layerUV = texUV * g_TerrainMaterials[ i ].uvscale;
+            float2 seamlessUV = Terrain_SampleSeamlessUV( layerUV );
 
-            float4 bcr = Bindless::GetTexture2D( g_TerrainMaterials[ i ].bcr_texid ).Sample( g_sAnisotropic, layerUV );
-            float4 nho = Bindless::GetTexture2D( g_TerrainMaterials[ i ].nho_texid ).Sample( g_sAnisotropic, layerUV );
+            Texture2D tBcr = Bindless::GetTexture2D( g_TerrainMaterials[ i ].bcr_texid );
+            Texture2D tNho = Bindless::GetTexture2D( g_TerrainMaterials[ i ].nho_texid );
+
+            float4 bcr = tBcr.Sample( g_sAnisotropic, seamlessUV );
+            float4 nho = tNho.Sample( g_sAnisotropic, seamlessUV );
 
             float3 normal = ComputeNormalFromRGTexture( nho.rg );
             normal.xz *= g_TerrainMaterials[ i ].normalstrength;

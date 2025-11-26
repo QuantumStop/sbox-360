@@ -15,20 +15,18 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 	/// </summary>
 	public static List<SceneEditorSession> All { get; } = new();
 
-	private static SceneEditorSession _active;
-
 	/// <summary>
 	/// The editor session that is currently active
 	/// </summary>
 	public static SceneEditorSession Active
 	{
-		get => _active;
+		get;
 		private set
 		{
-			if ( _active == value ) return;
+			if ( field == value ) return;
 
-			_active = value;
-			_active?.UpdateEditorTitle();
+			field = value;
+			field?.UpdateEditorTitle();
 		}
 	}
 
@@ -41,6 +39,9 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 	/// </summary>
 	public bool IsPrefabSession => this is PrefabEditorSession;
 
+	/// <summary>
+	/// The scene for this session
+	/// </summary>
 	public Scene Scene { get; private set; }
 
 	internal Widget SceneDock { get; set; }
@@ -57,7 +58,11 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 		InitUndo();
 		timeSinceSavedState = 0;
 
-		CreateSceneDock();
+		if ( this is not GameEditorSession )
+		{
+			// create dock - but not for game sessions, those are built into the parent session widget
+			CreateSceneDock();
+		}
 
 		EditorEvent.Register( this );
 	}
@@ -120,7 +125,7 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 
 	bool _destroyed;
 
-	public void Destroy()
+	public virtual void Destroy()
 	{
 		if ( _destroyed )
 			return;
@@ -148,6 +153,9 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 
 		Scene?.Destroy();
 		Scene = null;
+
+		GameSession?.Destroy();
+		GameSession = null;
 
 		SceneDock?.Destroy();
 		SceneDock = default;
@@ -212,18 +220,6 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 		else
 		{
 			SceneDock.SetWindowIcon( "grid_4x4" );
-
-			//
-			// Change the title to reflect current mode
-			//
-			if ( HasActiveGameScene )
-			{
-				SceneDock.WindowTitle = $"{title} (active)";
-			}
-			else
-			{
-				SceneDock.WindowTitle = title;
-			}
 		}
 	}
 
@@ -264,7 +260,7 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 	}
 
 	/// <summary>
-	/// Pushes the active editor scene to the current scope
+	/// Pushes the active scene to the current scope
 	/// </summary>
 	public static IDisposable Scope()
 	{
@@ -383,7 +379,7 @@ public partial class SceneEditorSession : Scene.ISceneEditorSession
 	/// </summary>
 	public static SceneEditorSession Resolve( Scene scene )
 	{
-		return All.FirstOrDefault( x => x.ActiveGameScene == scene || x.Scene == scene );
+		return All.FirstOrDefault( x => x.Scene == scene );
 	}
 
 	/// <summary>

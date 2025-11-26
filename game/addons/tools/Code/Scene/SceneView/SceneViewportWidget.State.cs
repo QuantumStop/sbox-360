@@ -170,7 +170,6 @@ public partial class SceneViewportWidget
 	[Event( "scene.session.save" )]
 	public void SaveState()
 	{
-		// Don't save the state of play sessions
 		if ( ProjectCookie is null ) return;
 
 		Scene scene = Session.Scene;

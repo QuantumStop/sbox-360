@@ -57,7 +57,7 @@ partial class ViewportTools
 			o.SetIcon( icon );
 			o.Checkable = true;
 			o.Checked = sceneViewWidget.ViewportLayout == layout;
-			o.Enabled = !sceneViewWidget.Session.HasActiveGameScene; // Not great, but this stuff needs straightening out overall
+			o.Enabled = !sceneViewWidget.Session.IsPlaying; // Not great, but this stuff needs straightening out overall
 		}
 
 		menu.OpenAtCursor();
