@@ -88,8 +88,6 @@ public partial class GameObject
 
 			if ( Gizmo.IsHovered && Gizmo.Settings.Selection ) size = 40;
 
-			Gizmo.Draw.IgnoreDepth = true;
-
 			if ( _handle.Texture is not null )
 			{
 				//
