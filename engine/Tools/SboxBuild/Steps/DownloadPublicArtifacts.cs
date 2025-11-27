@@ -133,13 +133,16 @@ internal class DownloadPublicArtifacts( string name ) : Step( name )
 
 	private static string ResolveCommitHash()
 	{
-		const string branchName = "master";
+		const string branchName = "HEAD";
+		const string remoteLocation = "https://github.com/Facepunch/sbox-public.git";
+		// compared to rev-parse, ls-remote adds a HEAD word to the end after 50 spaces, so we remove it
+		// this has all of the regular trailing and whitespaces, but also the HEAD we want gone
 		string gitCommit = null;
-		var success = Utility.RunProcess( "git", $"rev-parse {branchName}", onDataReceived: ( _, e ) =>
+		var success = Utility.RunProcess( "git", $"ls-remote {remoteLocation} {branchName}", onDataReceived: ( _, e ) =>
 		{
 			if ( !string.IsNullOrWhiteSpace( e.Data ) )
 			{
-				gitCommit ??= e.Data.Trim();
+				gitCommit ??= e.Data.Trim(branchName.ToCharArray()).Trim();
 			}
 		} );
 
