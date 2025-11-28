@@ -222,7 +222,8 @@ static class StartupLoadProject
 		// Go through and compile all assets
 		using ( var _ = Bootstrap.StartupTiming?.ScopeTimer( $"Load Project: CompileAllAssets" ) )
 		{
-			await CompileAllShaders();
+			// lol
+			//	await CompileAllShaders();
 			CompileAllAssets();
 
 			FileWatch.Tick();
