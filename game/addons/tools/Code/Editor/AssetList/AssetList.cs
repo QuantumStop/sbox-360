@@ -269,7 +269,7 @@ public partial class AssetList : ListView, AssetSystem.IEventListener
 		var iconRect = rect.Shrink( 4 );
 		iconRect.Height = iconRect.Width;
 
-		var textRect = rect.Shrink( 4 );
+		var textRect = rect.Shrink( 4, 0 );
 		textRect.Top = iconRect.Bottom + 4;
 
 		entry.DrawText( textRect );
