@@ -6,6 +6,7 @@ using Sandbox.VR;
 using Sentry;
 using Steamworks;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -46,14 +47,6 @@ internal static class Bootstrap
 				var culture = System.Globalization.CultureInfo.CreateSpecificCulture( "en-US" );
 				Thread.CurrentThread.CurrentCulture = culture;
 				Thread.CurrentThread.CurrentUICulture = culture;
-			}
-
-			var path = EngineFileSystem.Root.GetFullPath( $"/bin/managed" );
-
-			if ( !string.IsNullOrWhiteSpace( path ) && System.IO.Directory.Exists( path ) )
-			{
-				if ( System.IO.Directory.Exists( $"{path}/fmod.dll" ) ) NativeLibrary.Load( $"{path}/fmod.dll" );
-				if ( System.IO.Directory.Exists( $"{path}/fmodstudio.dll" ) ) NativeLibrary.Load( $"{path}/fmodstudio.dll" );
 			}
 
 			Logging.Enabled = true;
@@ -273,6 +266,13 @@ internal static class Bootstrap
 				Log.Info( "Bootstrap Init Done" );
 			}
 
+			if ( Directory.GetFiles( Path.GetFullPath( "bin/thirdparty" ) ).Length > 0 )
+			{
+				LoadLibrary( Path.GetFullPath( "bin/thirdparty/fmod.dll" ) );
+				LoadLibrary( Path.GetFullPath( "bin/thirdparty/fmodstudio.dll" ) );
+			}
+
+
 			//
 			// Networking bootstrap
 			//
@@ -303,7 +303,8 @@ internal static class Bootstrap
 		}
 	}
 
-
+	[DllImport( "kernel32.dll" )]
+	public static extern IntPtr LoadLibrary( string dllToLoad );
 
 	internal static void InitMinimal( string rootFolder )
 	{
