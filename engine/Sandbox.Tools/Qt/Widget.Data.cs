@@ -32,3 +32,35 @@ namespace Sandbox
 		}
 	}
 }
+
+
+public static class WidgetExtensions
+{
+	public static IEnumerable<T> FindAllChildren<T>( this Widget widget ) where T : Widget
+	{
+		foreach ( var child in widget.Children )
+		{
+			if ( child is T t )
+				yield return t;
+
+			// Recurse into children
+			foreach ( var nested in child.FindAllChildren<T>() )
+				yield return nested;
+		}
+	}
+
+	public static T FindParent<T>( this Widget widget ) where T : Widget
+	{
+		var parent = widget.Parent;
+
+		while ( parent != null )
+		{
+			if ( parent is T t )
+				return t;
+
+			parent = parent.Parent;
+		}
+
+		return null;
+	}
+}
