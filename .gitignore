@@ -110,8 +110,7 @@ game/sbox-standalone.runtimeconfig.json
 
 # Don't ignore our new assets
 !game/core/tools/images/common/splash_screen.png
-!game/core/tools/images/common/hang_detected.png
-!game/core/tools/images/common/workshop_banner.png
+!game/core/tools/images/common/launcher_banner.png
 !game/core/tools/images/common/logo.png
 !game/core/tools/images/common/logo_rounded.png
 !game/bin/thirdparty/*
