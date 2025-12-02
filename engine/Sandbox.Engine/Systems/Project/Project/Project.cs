@@ -39,6 +39,11 @@ public sealed partial class Project
 	public bool Pinned { get; set; }
 
 	/// <summary>
+	/// True if this project is the default one, this is user selectable
+	/// </summary>
+	public bool IsDefault { get; set; }
+
+	/// <summary>
 	/// When did the user last open this project?
 	/// </summary>
 	public DateTimeOffset LastOpened { get; set; }

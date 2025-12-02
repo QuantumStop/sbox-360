@@ -25,6 +25,51 @@ public class ProjectConfig
 	[Hide]
 	public DirectoryInfo AssetsDirectory { get; set; }
 
+	[JsonIgnore]
+	[Hide]
+	public const string MetaIconKey = "ProjectIcon";
+
+	[JsonIgnore]
+	[Hide]
+	public const string MetaBannerKey = "ProjectBanner";
+
+	[JsonIgnore]
+	[Hide]
+	public const string MetaSplashKey = "ProjectSplash";
+
+	/// <summary>
+	/// Square icon for this project (relative path).
+	/// Used for avatars, lists, etc.
+	/// </summary>
+	[JsonIgnore]
+	public string ProjectIcon
+	{
+		get => GetMetaOrDefault<string>( MetaIconKey, null );
+		set => SetMeta( MetaIconKey, value );
+	}
+
+	/// <summary>
+	/// Wide banner image for this project (relative path).
+	/// Used for headers and large displays.
+	/// </summary>
+	[JsonIgnore]
+	public string ProjectBanner
+	{
+		get => GetMetaOrDefault<string>( MetaBannerKey, null );
+		set => SetMeta( MetaBannerKey, value );
+	}
+
+	/// <summary>
+	/// Wide banner image for this project (relative path).
+	/// Used for splashscreen.
+	/// </summary>
+	[JsonIgnore]
+	public string ProjectSplash
+	{
+		get => GetMetaOrDefault<string>( MetaSplashKey, null );
+		set => SetMeta( MetaSplashKey, value );
+	}
+
 	/// <summary>
 	/// The human readable title, for example "Sandbox", "Counter-Strike"
 	/// </summary>
