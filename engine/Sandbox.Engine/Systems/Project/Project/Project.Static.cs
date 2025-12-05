@@ -102,7 +102,7 @@ public partial class Project
 	/// </summary>
 	internal static async Task InitializeBuiltIn( bool syncPackageManager = true )
 	{
-		AddFromFileBuiltIn( "addons/base/.sbproj" );
+		AddFromFileBuiltIn( "addons/base_override/.sbproj" );
 
 		if ( !Application.IsStandalone && !Application.IsHeadless )
 		{
@@ -111,7 +111,7 @@ public partial class Project
 
 		if ( Application.IsEditor || Application.IsUnitTest )
 		{
-			AddFromFileBuiltIn( "addons/tools/.sbproj" );
+			AddFromFileBuiltIn( "addons/tools_override/.sbproj" );
 			AddFromFileBuiltIn( "editor/ShaderGraph/.sbproj" );
 			AddFromFileBuiltIn( "editor/ActionGraph/.sbproj" );
 			AddFromFileBuiltIn( "editor/MovieMaker/.sbproj" );
