@@ -71,7 +71,7 @@ internal static class ManagedTools
 
 	public static void InitFinish()
 	{
-		stylesWatcher = FileSystem.Root.Watch( "/addons/tools/assets/styles/*" );
+		stylesWatcher = FileSystem.Root.Watch( "/addons/tools_override/assets/styles/*" );
 		stylesWatcher.OnChangedFile += ( x ) => Application.ReloadStyles();
 
 		//
