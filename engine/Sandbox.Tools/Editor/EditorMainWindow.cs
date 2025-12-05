@@ -236,7 +236,6 @@ public class EditorMainWindow : DockWindow
 				};
 			}
 		}
-		EditorToolBars.BuildNative( this );
 		EditorWindow = this;
 	}
 
